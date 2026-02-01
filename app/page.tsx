@@ -115,12 +115,13 @@ export default function JulianPanel() {
   useEffect(() => {
     if (currentView === 'dashboard') {
         // --- KONEKSI KE SERVER PTERODACTYL ---
-        const SERVER_URL = 'http://panel.fromscratch.web.id:20218';
+        const SERVER_URL = undefined;
         
-        console.log(`Menghubungkan ke ${SERVER_URL}...`);
+        console.log(`Menghubungkan via Proxy...`);
         
-        socketRef.current = io(SERVER_URL, {
-            transports: ['websocket', 'polling'], // Penting untuk remote server
+        socketRef.current = io({
+            path: '/socket.io', // Wajib ada agar proxy next.config.ts jalan
+            transports: ['websocket', 'polling'],
             reconnectionAttempts: 10,
         });
 
