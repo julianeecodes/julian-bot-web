@@ -120,7 +120,7 @@ export default function JulianPanel() {
     if (currentView === 'dashboard') {
         
         // Target Server (HTTP)
-        const SERVER_URL = 'https://julian-panel-server.loca.lt';
+        const SERVER_URL = 'https://jolly-otter-79.loca.lt';
         
         console.log(`Menghubungkan ke: ${SERVER_URL} (Mode: WebSocket Murni)`);
 
