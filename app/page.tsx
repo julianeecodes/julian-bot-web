@@ -120,7 +120,7 @@ export default function JulianPanel() {
     if (currentView === 'dashboard') {
         
         // Target Server (HTTP)
-        const SERVER_URL = 'http://panel.fromscratch.web.id:20218';
+        const SERVER_URL = 'https://julian-panel-server.loca.lt';
         
         console.log(`Menghubungkan ke: ${SERVER_URL} (Mode: WebSocket Murni)`);
 
