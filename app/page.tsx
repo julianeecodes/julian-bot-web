@@ -112,43 +112,51 @@ export default function JulianPanel() {
   }, []);
   
   // 2. Socket.IO Connection Logic (SUDAH DIPERBAIKI KE SERVER)
+  // --- MULAI KODE BARU (LOGIC ANTI TIMEOUT & DUAL MODE) ---
+  // --- KODE BARU (MODE PROXY / JEMBATAN) ---
+  // --- KODE FIX: DIRECT WEBSOCKET (ANTI XHR ERROR) ---
+  // --- KODE FINAL: KONEKSI LANGSUNG (WEBSOCKET ONLY) ---
   useEffect(() => {
     if (currentView === 'dashboard') {
-        // --- KONEKSI KE SERVER PTERODACTYL ---
-        const SERVER_URL = undefined;
         
-        console.log(`Menghubungkan via Proxy...`);
+        // Target Server (HTTP)
+        const SERVER_URL = 'http://panel.fromscratch.web.id:20218';
         
-        socketRef.current = io({
-            path: '/socket.io', // Wajib ada agar proxy next.config.ts jalan
-            transports: ['websocket', 'polling'],
-            reconnectionAttempts: 10,
+        console.log(`Menghubungkan ke: ${SERVER_URL} (Mode: WebSocket Murni)`);
+
+        socketRef.current = io(SERVER_URL, {
+            // INI KUNCINYA: Paksa pakai WebSocket saja.
+            // Jangan pakai 'polling', karena itu yang bikin error XHR/CORS.
+            transports: ['websocket'], 
+            upgrade: false, 
+            reconnectionAttempts: 20,
+            reconnectionDelay: 3000,
+            autoConnect: true,
         });
 
-        // Listener: Terima Log dari Server
+        // --- LISTENER ---
         socketRef.current.on('log', (msg: string) => {
             addLog(msg);
         });
 
-        // Listener: Terima Pairing Code Asli
         socketRef.current.on('pairing_code', (code: string) => {
             setPairingCode(code);
             setBotStatus('WAITING_SCAN');
-            
-            // Set Timer Expired (Visual)
+            // Timer visual 30 hari
             const date = new Date(); 
             date.setDate(date.getDate() + 30); 
             setExpiryTime(date.getTime());
         });
 
-        // Listener: Status Koneksi Sukses
         socketRef.current.on('connect', () => {
-             console.log("✅ BERHASIL TERHUBUNG!");
-             addLog("✅ Terhubung ke Server Utama.");
+             console.log("✅ KONEKSI SUKSES!");
+             addLog("✅ Terhubung ke Server.");
+             // Reset status error kalau berhasil
+             setBotStatus('CONNECTED'); 
         });
 
         socketRef.current.on('connect_error', (err: any) => {
-             console.error("❌ Gagal Konek:", err);
+             console.error("❌ Masalah Koneksi:", err.message);
         });
 
         socketRef.current.on('status', (status: string) => {
@@ -161,12 +169,13 @@ export default function JulianPanel() {
             }
         });
 
-        // Cleanup saat keluar dashboard
         return () => {
             if (socketRef.current) socketRef.current.disconnect();
         };
     }
   }, [currentView]);
+  // --- AKHIR KODE ---
+  // --- AKHIR KODE ---
 
   useEffect(() => {
     logsEndRef.current?.scrollIntoView({ behavior: 'smooth' });
